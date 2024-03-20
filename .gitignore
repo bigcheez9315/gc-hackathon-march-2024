@@ -1,0 +1,6 @@
+node_modules
+dist
+chain/test-network
+chain/logs
+chain/lib/tsconfig.tsbuildinfo
+**/node_modules

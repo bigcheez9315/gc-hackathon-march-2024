@@ -1,0 +1,18 @@
+{
+  "name": "galachain-hackathon-2024",
+  "packageManager": "npm@9.7.2",
+  "workspaces": [
+    "chain",
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others \"npm run dev:chain\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:chain": "npm run network:recreate --workspace chain",
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
