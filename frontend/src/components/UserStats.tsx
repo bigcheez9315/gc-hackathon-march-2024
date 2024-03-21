@@ -11,12 +11,11 @@ export default function UserStats() {
 
     const { countdownEnds, resetCountdownEnds, updateBalances, balances } = useContext(CountdownContext);
 
-    const rehydrateBalances = (tokenKey:string='LEMIN') => {
+    const rehydrateBalances = () => {
         const userData = getFromLocalStorage('user');
         fetch(`${url}/balances`, {
             method: "POST",
             body: JSON.stringify({
-                tokenKey,
                 identityKey: userData.user.identityKey,
                 privateKey: userData.user.privateKey,
             }),
@@ -111,12 +110,12 @@ export default function UserStats() {
     }, []);
 
     const handleCraftItem = async (item: string) => {
-        const tokenKey = item === 'Fragment' ? 'LEMIN' : 'LEFC';
+        const tokenKey = item === 'Fragment' ? 'DRST' : 'DRST';
         const quantity = item === 'Fragment' ? 50 : 3;
         console.log('Burninng', tokenKey, quantity);
-        await burnToken(tokenKey, quantity);
+        // await burnToken(tokenKey, quantity);
         console.log('Miniting', item === 'Fragment' ? 'LEFC' : 'LECC', 1);
-        await craftToken(item === 'Fragment' ? 'LEFC' : 'LECC', 1);
+        await craftToken(item === 'Fragment' ? 'DRST' : 'DRST', 1);
         rehydrateBalances();
     }
 

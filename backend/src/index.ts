@@ -12,6 +12,7 @@ import {
   FetchBalancesDto,
   TokenBurn,
   TokenBalance,
+  TokenInstance,
   AllowanceType,
   TokenAllowance
 } from "@gala-chain/api";
@@ -118,37 +119,37 @@ app.post('/create-token-classes', async (req: Request, res: Response, next: Next
     console.log('creating magic sword dto')
 
    // create magicSword dto
-   const magicSwordDto: CreateTokenClassDto =
+   const ultraSwordDto: CreateTokenClassDto =
       await createValidDTO<CreateTokenClassDto>(CreateTokenClassDto, {
-        decimals: 2,
-        tokenClass: tokenClassMap.MGSD,
-        name: "Magic Sword",
-        symbol: "MGSD",
+        decimals: 0,
+        tokenClass: tokenClassMap.ULSW,
+        name: "Ultra Sword",
+        symbol: "ULSW",
         description:
-          "Magic Sword Non-Fungible Token for Wizard Game",
+          "Ultra Sword Non-Fungible Token for Wizard Game",
         isNonFungible: true,
         image:
           "https://files.slack.com/files-tmb/T018SUFPRNU-F06JNH22RE0-c43278d8ca/nft_cores_360.gif",
         maxSupply: new BigNumber(20),
       });
-    console.log('creating poisonous snake dto')
+    console.log('creating ultra sword dto')
 
    // create poisonous snake dto
-   const poisonousSnakeDto: CreateTokenClassDto =
+   const friendlySnakeDto: CreateTokenClassDto =
    await createValidDTO<CreateTokenClassDto>(CreateTokenClassDto, {
      decimals: 2,
-     tokenClass: tokenClassMap.PSNK,
-     name: "Poisonous Snake",
-     symbol: "PSNK",
+     tokenClass: tokenClassMap.FRSN,
+     name: "Friendly Snake",
+     symbol: "FRSN",
      description:
-       "Poisonous Snake Non-Fungible Token for Wizard Game",
+       "Friendly Snake Non-Fungible Token for Wizard Game",
      isNonFungible: true,
      image:
        "https://files.slack.com/files-tmb/T018SUFPRNU-F06JNH22RE0-c43278d8ca/nft_cores_360.gif",
      maxSupply: new BigNumber(15),
    });
    // store all dtos in an array
-   const dtoArray: CreateTokenClassDto[] = [dragonStoneDto, dragonTearsDto, magicSwordDto, poisonousSnakeDto]
+   const dtoArray: CreateTokenClassDto[] = [dragonStoneDto, dragonTearsDto, ultraSwordDto, friendlySnakeDto]
    const failed = []
    // Make api request to /CreateTokenClass endpoint
    try {
@@ -232,7 +233,7 @@ app.post('/mint-tokens', async (req: MintBurnRequest, res: Response, next: NextF
 
     // grant quantity allowance of nftClassKey to user
     const galaAllowanceDto = await createValidDTO<GrantAllowanceDto>(GrantAllowanceDto, {
-      tokenInstance: TokenInstanceKey.fungibleKey(nftClassKey).toQueryKey(),
+      tokenInstance: TokenInstanceKey.nftKey(nftClassKey, TokenInstance.FUNGIBLE_TOKEN_INSTANCE).toQueryKey(),
       allowanceType: AllowanceType.Mint,
       quantities: [
         { user: identityKey, quantity: new BigNumber(quantity) }

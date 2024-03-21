@@ -19,15 +19,35 @@ const magicSwordClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
     type: "MagicSword",
     additionalKey: "none"
 });
+const ultraSwordClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
+    collection: 'wizardGame',
+    category: "swords",
+    type: "UltraSword",
+    additionalKey: "legendary"
+});
 const poisonousSnakeClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
-    collection: 'lastexpedition',
-    category: "Currency",
+    collection: 'wizardGame',
+    category: "Collectible",
     type: "PoisonousSnake",
     additionalKey: "none"
+});
+const turboSwordClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
+    collection: 'wizards',
+    category: "Swords",
+    type: "TurboSword",
+    additionalKey: "epic"
+});
+const friendlySnakeClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
+    collection: 'wizards',
+    category: "Snakes",
+    type: "FriendlySnake",
+    additionalKey: "epic"
 });
 export const tokenClassMap: Record<string, TokenClassKey> = {
     DRST: dragonStoneClassKey,
     DRTR: dragonTearsClassKey,
-    MGSD: magicSwordClassKey,
-    PSNAKE: poisonousSnakeClassKey
+    TBSW: turboSwordClassKey,
+    FRSN: friendlySnakeClassKey,
+    PSNK: poisonousSnakeClassKey,
+    ULSW: ultraSwordClassKey
 }
