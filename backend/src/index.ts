@@ -33,7 +33,7 @@ type MintBurnRequest = Request<{}, {},{
   quantity: number,
   tokenKey: string,
   identityKey: string,
-  privateKey: string
+  privateKey: string,
 }>;
 
 // Setup Express & Middleware
@@ -137,7 +137,7 @@ app.post('/create-token-classes', async (req: Request, res: Response, next: Next
    // create poisonous snake dto
    const friendlySnakeDto: CreateTokenClassDto =
    await createValidDTO<CreateTokenClassDto>(CreateTokenClassDto, {
-     decimals: 2,
+     decimals: 0,
      tokenClass: tokenClassMap.FRSN,
      name: "Friendly Snake",
      symbol: "FRSN",
@@ -230,10 +230,11 @@ app.post('/mint-tokens', async (req: MintBurnRequest, res: Response, next: NextF
         message: 'Invalid token key. Try again'
     });
     }
-
+    const tokenInstance = TokenInstanceKey.fungibleKey(nftClassKey).toQueryKey()
+    console.log(`token instance = ${JSON.stringify(tokenInstance)}`)
     // grant quantity allowance of nftClassKey to user
     const galaAllowanceDto = await createValidDTO<GrantAllowanceDto>(GrantAllowanceDto, {
-      tokenInstance: TokenInstanceKey.nftKey(nftClassKey, TokenInstance.FUNGIBLE_TOKEN_INSTANCE).toQueryKey(),
+      tokenInstance,
       allowanceType: AllowanceType.Mint,
       quantities: [
         { user: identityKey, quantity: new BigNumber(quantity) }
