@@ -241,11 +241,6 @@ app.post('/mint-tokens', async (req: MintBurnRequest, res: Response, next: NextF
     });
     if (!adminPrivateKey) throw Error('Need to define GC_ADMIN_PRIVATE_KEY environment variable')
 
-    // const grantAllowanceResult = await client.submitTransaction<TokenAllowance[]>(
-    //   "GrantAllowance",
-    //   galaAllowanceDto.signed(adminPrivateKey),
-    //   TokenAllowance
-    // );
     let endpoint = '/GrantAllowance'
     galaAllowanceDto.sign(adminPrivateKey);
     let payloadString = galaAllowanceDto.serialize()
@@ -253,11 +248,6 @@ app.post('/mint-tokens', async (req: MintBurnRequest, res: Response, next: NextF
     console.log("Granting token allowance for user")
     const grantAllowanceResponse = await galaChainTokenAxios.post(endpoint, payloadString)
     console.log(`Grant Allowance response = ${JSON.stringify(grantAllowanceResponse.data)}`)
-    // console.log(`grant allowance result = ${JSON.stringify(grantAllowanceResult)}`)
-    // if (GalaChainResponse.isError(grantAllowanceResult)) {
-    //   await client.disconnect();
-    //   return res.status(500).json({ ...grantAllowanceResult });
-    // }
 
     // mint Quantity of nftClassKey to user
     const userMintDto = await createValidDTO<MintTokenDto>(MintTokenDto, {
@@ -273,70 +263,51 @@ app.post('/mint-tokens', async (req: MintBurnRequest, res: Response, next: NextF
     console.log("Mint token for user")
     const mintTokenResponse = await galaChainTokenAxios.post(endpoint, payloadString)
     console.log(`Mint Token response = ${JSON.stringify(mintTokenResponse.data)}`)
-    // const mintTokenResponse = await client.submitTransaction(
-    //   "MintToken",
-    //   userMintDto.signed(privateKey),
-    //   MintTokenDto
-    // );
 
-    // if (GalaChainResponse.isError(mintTokenResponse)) {
-    //   await client.disconnect();
-    //   return res.status(500).json({ ...mintTokenResponse });
-    // }
-
-    // await client.disconnect();
     res.json({});
   } catch (error) {
-    // await client.disconnect();
     console.log(`error minting token for user: ${JSON.stringify(error)}`)
     return res.status(500).json({ error });
-    // next(error);
   }
 });
 
-// // Burn Tokens
-// app.put('/burn', async (req: MintBurnRequest, res: Response, next: NextFunction) => {
-//   const {tokenKey, quantity, privateKey} = req.body;
-//   const client = getClientWithAuthority("GalaChainToken");
+// Burn Tokens
+app.post('/burn', async (req: MintBurnRequest, res: Response, next: NextFunction) => {
+  const {tokenKey, quantity, privateKey} = req.body;
 
-//   try {
-//     const nftClassKey = tokenClassMap[tokenKey];
-//     if (!nftClassKey) {
-//       console.log("Invalid token key!")
-//       await client.disconnect();
-//       return res.status(400).send({
-//         message: 'Invalid token key. Try again'
-//      });
-//     }
+  try {
+    const nftClassKey = tokenClassMap[tokenKey];
+    if (!nftClassKey) {
+      console.log("Invalid token key!")
+      return res.status(400).send({
+        message: 'Invalid token key. Try again'
+     });
+    }
 
-//     // burn quantity of tokens for user
-//     const burnTokensDto = await createValidDTO<BurnTokensDto>(BurnTokensDto, {
-//       tokenInstances: [
-//         {
-//           tokenInstanceKey: TokenInstanceKey.fungibleKey(nftClassKey),
-//           quantity: new BigNumber(quantity)
-//         }
-//       ]
-//     });
-//     console.log("burning tokens for user")
-//     const burnTokenResponse = await client.submitTransaction<TokenBurn>(
-//       "BurnTokens",
-//       burnTokensDto.signed(privateKey),
-//       TokenBurn
-//     );
-
-//     if (GalaChainResponse.isError(burnTokenResponse)) {
-//       await client.disconnect();
-//       return res.status(500).json({ ...burnTokenResponse });
-//     }
-
-//     await client.disconnect();
-//     res.json({ data: burnTokenResponse.Data, status: burnTokenResponse.Status });
-//   } catch (error) {
-//     await client.disconnect();
-//     next(error);
-//   }
-// });
+    // burn quantity of tokens for user
+    const burnTokensDto = await createValidDTO<BurnTokensDto>(BurnTokensDto, {
+      tokenInstances: [
+        {
+          tokenInstanceKey: TokenInstanceKey.fungibleKey(nftClassKey),
+          quantity: new BigNumber(quantity)
+        }
+      ]
+    });
+    console.log("burning tokens for user")
+    let endpoint = '/BurnTokens'
+    burnTokensDto.sign(privateKey);
+    let payloadString = burnTokensDto.serialize()
+    console.log(`dto string = ${payloadString}`)
+    console.log("Burn Tokens for user")
+    const burnTokensResponse = await galaChainTokenAxios.post(endpoint, payloadString)
+    console.log(`Burn Token response = ${JSON.stringify(burnTokensResponse.data)}`)
+    res.json(burnTokensResponse.data);
+  } catch (error) {
+    // await client.disconnect();
+    console.log(`Error burning tokens: ${JSON.stringify(error)}`)
+    return res.status(500).json({error})
+  }
+});
 
 // LFG 🚀
 const port = process.env.PORT || 8000;
