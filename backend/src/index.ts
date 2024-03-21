@@ -34,6 +34,7 @@ type MintBurnRequest = Request<{}, {},{
   tokenKey: string,
   identityKey: string,
   privateKey: string,
+  instanceNumber?: number;
 }>;
 
 // Setup Express & Middleware
@@ -275,7 +276,7 @@ app.post('/mint-tokens', async (req: MintBurnRequest, res: Response, next: NextF
 
 // Burn Tokens
 app.post('/burn', async (req: MintBurnRequest, res: Response, next: NextFunction) => {
-  const {tokenKey, quantity, privateKey} = req.body;
+  const {tokenKey, privateKey, instanceNumber} = req.body;
 
   try {
     const nftClassKey = tokenClassMap[tokenKey];
@@ -285,13 +286,18 @@ app.post('/burn', async (req: MintBurnRequest, res: Response, next: NextFunction
         message: 'Invalid token key. Try again'
      });
     }
+    if (!instanceNumber) {
+      const errMessage = "Need to pass in Instance Number for NFT to burn"
+      console.log(errMessage)
+      return res.status(400).send(errMessage)
+    }
 
     // burn quantity of tokens for user
     const burnTokensDto = await createValidDTO<BurnTokensDto>(BurnTokensDto, {
       tokenInstances: [
         {
-          tokenInstanceKey: TokenInstanceKey.fungibleKey(nftClassKey),
-          quantity: new BigNumber(quantity)
+          tokenInstanceKey: TokenInstanceKey.nftKey(nftClassKey, instanceNumber),
+          quantity: new BigNumber(1)
         }
       ]
     });
