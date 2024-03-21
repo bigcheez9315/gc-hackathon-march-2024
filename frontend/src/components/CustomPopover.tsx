@@ -51,11 +51,9 @@ const handleCraftItemClick = (item:string, popup:any) => {
                 <Typography variant="subtitle1" gutterBottom>
                 {balanceKey}
                 </Typography>
+                
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  Fusce vulputate eleifend sapien. Curabitur at lacus ac velit ornare lobortis.
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {balances[balanceKey]}
+                Number of available {balanceKey}s: {balances[balanceKey]}
                 </Typography>
               </Box>
             </Popover>
@@ -64,7 +62,7 @@ const handleCraftItemClick = (item:string, popup:any) => {
             <Paper>
           <ComponentBlock title="Click">
             <Button variant="contained" onClick={clickPopover.onOpen}>
-              Craft {balanceKey}
+              Melt {balanceKey}
             </Button>
             <Popover
               open={Boolean(clickPopover.open)}
@@ -81,14 +79,14 @@ const handleCraftItemClick = (item:string, popup:any) => {
             >
               <Box sx={{ p: 2, maxWidth: 280 }}>
                 <Typography variant="subtitle1" gutterBottom>
-                  Exchange { balanceKey === 'Core' ? 3 : 50} { balanceKey === 'Core' ? 'Fragments' : 'Minerals'} for 1 {balanceKey}
+                  Melt down { balanceKey} to receive 10 Dragon Tears and 20 Dragon Stones
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                { balanceKey === 'Core' ? 'Cores can be used to create singularities and rank up' : 'Fragments can be used to craft powerful items.'}
+                  Melt this item to recieve premium currency in the game.
                 </Typography>
                 <br/>
-                <Button variant="contained" onClick={()=>handleCraftItemClick(balanceKey, clickPopover)}>
-                    Craft!
+                <Button variant="contained" onClick={()=>handleCraftItemClick(balanceKey, clickPopover)} style={{textTransform:'none'}}>
+                    sMelt it!
                 </Button>
                 
               </Box>

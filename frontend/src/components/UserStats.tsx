@@ -9,7 +9,7 @@ const url = import.meta.env.VITE_API_URL;
 
 export default function UserStats() {
 
-    const { countdownEnds, resetCountdownEnds, updateBalances, balances } = useContext(CountdownContext);
+    const { countdownEnds, resetCountdownEnds, updateBalances, balances, updateNftBalances, nftBalances } = useContext(CountdownContext);
 
     const rehydrateBalances = () => {
         const userData = getFromLocalStorage('user');
@@ -27,6 +27,9 @@ export default function UserStats() {
         .then((data) => data.data)
         .then((balancesData) => {
             if (balancesData.length > 0) {
+                console.log('Balancesss', balancesData);
+                const swords = balancesData.find((balance: any) => balance?.type === 'UltraSword');
+                updateNftBalances(swords);
                 const b = balancesData.reduce((acc: any, balance: any) => {
                     if(!balance) return acc
                     acc[balance.type] = Number(balance.quantity);
@@ -61,11 +64,12 @@ export default function UserStats() {
 
     const burnToken = (tokenKey:string, quantity:number ) => {
         const userData = getFromLocalStorage('user');
+        console.log('burning--', nftBalances)
         fetch(`${url}/burn`, {
-            method: "PUT",
+            method: "POST",
             body: JSON.stringify({
                 tokenKey,
-                quantity,
+                instanceNumber: nftBalances.instanceIds.pop(),
                 identityKey: userData.user.identityKey,
                 privateKey: userData.user.privateKey,
             }),
@@ -109,20 +113,18 @@ export default function UserStats() {
         rehydrateBalances();
     }, []);
 
-    const handleCraftItem = async (item: string) => {
-        const tokenKey = item === 'Fragment' ? 'DRST' : 'DRST';
-        const quantity = item === 'Fragment' ? 50 : 3;
-        console.log('Burninng', tokenKey, quantity);
-        // await burnToken(tokenKey, quantity);
-        console.log('Miniting', item === 'Fragment' ? 'LEFC' : 'LECC', 1);
-        await craftToken(item === 'Fragment' ? 'DRST' : 'DRST', 1);
+    const handleCraftItem = async () => {
+        
+        await burnToken('ULSW', 1);
+        await craftToken('DRST', 20);
+        await craftToken('DRTR', 10);
         rehydrateBalances();
     }
 
   return (
     <div style={{ width:300,  position:'fixed', top:20, left:20}}>
       
-        <div style={{ display: "flex", alignItems: 'flex-start', flexDirection:'column'}}>
+        {/* <div style={{ display: "flex", alignItems: 'flex-start', flexDirection:'column'}}>
             <div style={{ display: "flex", alignItems: 'flex-start'}}>
                <div style={{fontSize:18, flex:1}}>Acquiring minerals from hunters: 
                 <p style={{color:'#fff600'}}>{countdownEnds}</p> 
@@ -130,15 +132,16 @@ export default function UserStats() {
                 </div> 
             </div>
             
-        </div>
+        </div> */}
         <div style={{ display: "flex", alignItems: 'flex-start', flexDirection:'column'}}>
             <div style={{ flex:1}}>
-               <h2>Inventory</h2>
+               <h2>Game Inventory</h2>
             </div> 
             <div style={{ display:'flex', flex:1, alignItems: 'flex-start'}}>
             {
                 Object.keys(balances).map((key) => {
                     const balanceKey = key as keyof Balances;
+                    if (balanceKey === 'UltraSword') return null; 
                     return <div key={key} style={{flex:1, padding:10}}><b>{key}<br/> {balances[balanceKey]}</b></div>
                 })
             }
@@ -146,13 +149,17 @@ export default function UserStats() {
         </div>
         <div style={{ display: "flex", alignItems: 'flex-start', flexDirection:'column'}}>
             <div style={{ flex:1}}>
-               <h2>Crafting</h2>
+               <h2>Available NFTs</h2>
             </div> 
             <div style={{ display:'flex', flex:1, alignItems: 'flex-start'}}>
             {
                 Object.keys(balances).map((key) => {
                     const balanceKey = key as keyof Balances;
-                    if (balanceKey === 'Mineral') return null; 
+                    if (balanceKey === 'DragonStone' || balanceKey === 'DragonTears') return null; 
+                    if (balanceKey === 'UltraSword' && balances[balanceKey] === 0) return <div key={key} style={{flex:1, padding:10, minWidth:100}}>
+                    No NFTs available
+                    {/* <b>{key}<br/> {balances[balanceKey]}</b> */}
+                </div>
                     return <div key={key} style={{flex:1, padding:10, minWidth:100}}>
                         <PopoverView balanceKey={balanceKey} balances={balances} handleCraftItem={handleCraftItem}/>
                         {/* <b>{key}<br/> {balances[balanceKey]}</b> */}

@@ -17,27 +17,7 @@ const initialCountdownValue = 3;
 
   return (
     <div style={{ minHeight: "350px"}}>
-      <h2>Welcome Executor</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignContent: 'center', gap: '10px'}}>
-       
-        <div style={{ display: "flex",flex:1, alignItems: 'center'}}>
-            <div>
-                {counting ? `Time till next mineral shipment: ${countdown}` : 'Countdown finished'}
-            </div>
-        </div>
-        <div style={{ display: "flex", flex:1, alignItems: 'center'}}>
-            <div>
-                {`Time till next fragment shipment: `}
-                <Tooltip title="Upgrade your rank to unlock fragment shipments">
-                <Button >
-                Level UP (500 Minerals)
-                </Button>
-                </Tooltip>
-            </div>
-        </div>
-      
-      </div>
-      
+      <h2>Exchange NFTs for premium in-game currency</h2> 
     </div>
   )
 }

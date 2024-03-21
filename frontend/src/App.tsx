@@ -27,7 +27,7 @@ function App() {
       <QueryClientProvider client={queryClient} key={user?.publicKey}>
       
         <UserStats />
-        <h1>Dash</h1>
+        <h1>Melting Pot</h1>
         <div className="card">
           <br />
           <UserDash />
