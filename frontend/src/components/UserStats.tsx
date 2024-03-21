@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query"
 import { Balances, CountdownContext } from "../providers/CountdownProvider"
 import { getFromLocalStorage } from "../tools";
@@ -10,6 +10,7 @@ const url = import.meta.env.VITE_API_URL;
 export default function UserStats() {
 
     const { countdownEnds, resetCountdownEnds, updateBalances, balances, updateNftBalances, nftBalances } = useContext(CountdownContext);
+    const [loading, setLoading] = useState(false);
 
     const rehydrateBalances = () => {
         const userData = getFromLocalStorage('user');
@@ -28,7 +29,7 @@ export default function UserStats() {
         .then((balancesData) => {
             if (balancesData.length > 0) {
                 console.log('Balancesss', balancesData);
-                const swords = balancesData.find((balance: any) => balance?.type === 'UltraSword');
+                const swords = balancesData.find((balance: any) => balance?.type === 'TurboSword');
                 updateNftBalances(swords);
                 const b = balancesData.reduce((acc: any, balance: any) => {
                     if(!balance) return acc
@@ -114,15 +115,17 @@ export default function UserStats() {
     }, []);
 
     const handleCraftItem = async () => {
-        
-        await burnToken('ULSW', 1);
+        setLoading(true);
+        await burnToken('TBSW', 1);
         await craftToken('DRST', 20);
         await craftToken('DRTR', 10);
         rehydrateBalances();
+        setLoading(false)
     }
-
+    if(loading) return <div>sMelting items...</div>
   return (
     <div style={{ width:300,  position:'fixed', top:20, left:20}}>
+
       
         {/* <div style={{ display: "flex", alignItems: 'flex-start', flexDirection:'column'}}>
             <div style={{ display: "flex", alignItems: 'flex-start'}}>
@@ -141,7 +144,7 @@ export default function UserStats() {
             {
                 Object.keys(balances).map((key) => {
                     const balanceKey = key as keyof Balances;
-                    if (balanceKey === 'UltraSword') return null; 
+                    if (balanceKey === 'TurboSword') return null; 
                     return <div key={key} style={{flex:1, padding:10}}><b>{key}<br/> {balances[balanceKey]}</b></div>
                 })
             }
@@ -155,9 +158,9 @@ export default function UserStats() {
             {
                 Object.keys(balances).map((key) => {
                     const balanceKey = key as keyof Balances;
-                    if (balanceKey === 'DragonStone' || balanceKey === 'DragonTears') return null; 
-                    if (balanceKey === 'UltraSword' && balances[balanceKey] === 0) return <div key={key} style={{flex:1, padding:10, minWidth:100}}>
-                    No NFTs available
+                    if (balanceKey === 'DragonStone' || balanceKey === 'DragonTears' || balanceKey === 'UltraSword') return null; 
+                    if (balanceKey === 'TurboSword' && balances[balanceKey] === 0) return <div key={key} style={{flex:1, padding:10, minWidth:100}}>
+                    No NFTs available for exchange
                     {/* <b>{key}<br/> {balances[balanceKey]}</b> */}
                 </div>
                     return <div key={key} style={{flex:1, padding:10, minWidth:100}}>
