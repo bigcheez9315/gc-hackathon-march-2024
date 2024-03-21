@@ -4,3 +4,6 @@ chain/test-network
 chain/logs
 chain/lib/tsconfig.tsbuildinfo
 **/node_modules
+**/gc-admin-key
+**/gc-dev-key
+**/.env

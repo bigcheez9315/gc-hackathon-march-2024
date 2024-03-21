@@ -3,6 +3,7 @@ import cors from "cors";
 import {
   GalaChainResponse,
   GrantAllowanceDto,
+  CreateTokenClassDto,
   RegisterUserDto,
   createValidDTO,
   TokenInstanceKey,
@@ -21,9 +22,12 @@ import { instanceToPlain } from "class-transformer";
 import { tokenClassMap } from './nft_classes/token_class_definitions';
 import {
   adminPrivateKey,
-  getClientWithAuthority,
+  galaPublicKeyContractAxios,
+  galaChainTokenAxios,
+  adminPublicKey
+  // getClientWithAuthority,
 } from './config';
-
+const maxSupply = 10000000;
 type MintBurnRequest = Request<{}, {},{
   quantity: number,
   tokenKey: string,
@@ -45,82 +49,182 @@ app.get('/', (req: Request, res: Response) => {
 
 // New User
 app.post('/new-user', async (req: Request, res: Response, next: NextFunction) => {
-  const client = getClientWithAuthority("PublicKeyContract");
+  // const client = getClientWithAuthority("PublicKeyContract");
   const newUser = ChainUser.withRandomKeys();
 
   try {
     const dto = new RegisterUserDto();
-    dto.publicKey = newUser.publicKey;
-    dto.sign(adminPrivateKey, false);
-    const response = await client.RegisterEthUser(dto);
-    if (GalaChainResponse.isError(response)) {
-      await client.disconnect();
-      return res.status(500).json({ ...response });
-    }
 
-    await client.disconnect();
+    dto.publicKey = newUser.publicKey;
+    console.log(`public key = ${dto.publicKey}`)
+    if (!adminPrivateKey || !adminPublicKey) throw Error(
+      'Need to define GC_ADMIN_PRIVATE_KEY and GC_ADMIN_PUBLIC_KEY environment variables')
+    console.log('signing dto')
+    dto.sign(adminPrivateKey);
+    const payloadString = dto.serialize()
+    console.log(` dto string = ${payloadString}`)
+
+    const endpoint = '/RegisterEthUser'
+    const response = await galaPublicKeyContractAxios.post(endpoint, payloadString)
+    // const response = await client.RegisterEthUser(dto);
+     console.log(`response = ${JSON.stringify(response.data)}`)
     res.json({
       alias: newUser.name,
       ethAddress: newUser.ethAddress,
       user: newUser,
-      response: { 
-        data: response.Data,
-        status: response.Status
-      }
+      response: response.data
     });
+  //  res.json(response.data)
   } catch (error) {
-    await client.disconnect();
-    next(error);
+    // await client.disconnect();
+    console.log(`Error registering new user = ${JSON.stringify(error)}`)
+    return res.status(500).json({ error });
   }
 });
 
+// Create Token Class Definitions
+app.post('/create-token-classes', async (req: Request, res: Response, next: NextFunction) => {
+  // create dragon stone fungible token
+  console.log('creating dragon stone dto')
+  const dragonStoneDto: CreateTokenClassDto =
+      await createValidDTO<CreateTokenClassDto>(CreateTokenClassDto, {
+        decimals: 2,
+        tokenClass: tokenClassMap.DRST,
+        name: "Dragon Stone",
+        symbol: "DRST",
+        description:
+          "Dragon Stone Fungible In-Game Currency",
+        isNonFungible: false,
+        image:
+          "https://files.slack.com/files-tmb/T018SUFPRNU-F06JNH22RE0-c43278d8ca/nft_cores_360.gif",
+        maxSupply: new BigNumber(maxSupply),
+      });
+   // create dragon tears dto
+   console.log('creating dragon tears dto')
+
+   const dragonTearsDto: CreateTokenClassDto =
+    await createValidDTO<CreateTokenClassDto>(CreateTokenClassDto, {
+      decimals: 2,
+      tokenClass: tokenClassMap.DRTR,
+      name: "Dragon Tears",
+      symbol: "DRTR",
+      description:
+        "Dragon Tears Fungible In-Game Currency",
+      isNonFungible: false,
+      image:
+        "https://files.slack.com/files-tmb/T018SUFPRNU-F06JNH22RE0-c43278d8ca/nft_cores_360.gif",
+      maxSupply: new BigNumber(maxSupply),
+    });
+    console.log('creating magic sword dto')
+
+   // create magicSword dto
+   const magicSwordDto: CreateTokenClassDto =
+      await createValidDTO<CreateTokenClassDto>(CreateTokenClassDto, {
+        decimals: 2,
+        tokenClass: tokenClassMap.MGSD,
+        name: "Magic Sword",
+        symbol: "MGSD",
+        description:
+          "Magic Sword Non-Fungible Token for Wizard Game",
+        isNonFungible: true,
+        image:
+          "https://files.slack.com/files-tmb/T018SUFPRNU-F06JNH22RE0-c43278d8ca/nft_cores_360.gif",
+        maxSupply: new BigNumber(20),
+      });
+    console.log('creating poisonous snake dto')
+
+   // create poisonous snake dto
+   const poisonousSnakeDto: CreateTokenClassDto =
+   await createValidDTO<CreateTokenClassDto>(CreateTokenClassDto, {
+     decimals: 2,
+     tokenClass: tokenClassMap.PSNK,
+     name: "Poisonous Snake",
+     symbol: "PSNK",
+     description:
+       "Poisonous Snake Non-Fungible Token for Wizard Game",
+     isNonFungible: true,
+     image:
+       "https://files.slack.com/files-tmb/T018SUFPRNU-F06JNH22RE0-c43278d8ca/nft_cores_360.gif",
+     maxSupply: new BigNumber(15),
+   });
+   // store all dtos in an array
+   const dtoArray: CreateTokenClassDto[] = [dragonStoneDto, dragonTearsDto, magicSwordDto, poisonousSnakeDto]
+   const failed = []
+   // Make api request to /CreateTokenClass endpoint
+   try {
+
+    if (!adminPrivateKey ) throw Error(
+      'Need to define GC_ADMIN_PRIVATE_KEY  environment variables')
+
+    const endpoint = '/CreateTokenClass'
+    for (const dto of dtoArray) {
+      try {
+        console.log('signing dto')
+        dto.sign(adminPrivateKey);
+        const payloadString = dto.serialize()
+        console.log(` dto string = ${payloadString}`)
+    
+        console.log(`Creating token class definition for ${dto.name}`)
+        const response = await galaChainTokenAxios.post(endpoint, payloadString)
+        // const response = await client.RegisterEthUser(dto);
+         console.log(`response = ${JSON.stringify(response.data)}`)
+      } catch (e) {
+        console.log(`Error creating token class definition for ${dto.name}: ${JSON.stringify(e)}`)
+      }
+     
+    }
+    
+    res.json({});
+  //  res.json(response.data)
+  } catch (error) {
+    // await client.disconnect();
+    console.log(`Error creating token classes = ${JSON.stringify(error)}`)
+    return res.status(500).json({ error });
+  }
+  
+})
 // Balances
 app.post('/balances', async (req: MintBurnRequest, res: Response, next: NextFunction) => {
   const { identityKey, privateKey} = req.body;
-  const client = getClientWithAuthority("GalaChainToken");
-  
   try {
 
     const balancesData = []
     for (const key in tokenClassMap) {
       const nftClassKey = tokenClassMap[key]
       // get balance of nftClassKey for user
-      const galaBalanceDto = await createValidDTO(FetchBalancesDto, {
+      const galaChainBalanceDto = await createValidDTO(FetchBalancesDto, {
         owner: identityKey,
         ...instanceToPlain(nftClassKey)
       });
-      console.log("Fetching Balances for User")
-      const fetchBalanceResponse: any = await client.evaluateTransaction(
-        "FetchBalances",
-        galaBalanceDto.signed(privateKey, false),
-        // @ts-expect-error
-        TokenBalance
-      );
-      if (GalaChainResponse.isError(fetchBalanceResponse)) {
-        await client.disconnect();
-        return res.status(500).json({ ...fetchBalanceResponse });
-      }  
-      balancesData.push(fetchBalanceResponse.Data[0])
+      console.log(`Fetching Balances for ${galaChainBalanceDto.type} token`)
+      const endpoint = '/FetchBalances'
+      galaChainBalanceDto.sign(privateKey);
+      const payloadString = galaChainBalanceDto.serialize()
+      console.log(` dto string = ${payloadString}`)
+      const fetchBalanceResponse = await galaChainTokenAxios.post(endpoint, payloadString)
+      console.log(`Fetch balance response = ${JSON.stringify(fetchBalanceResponse.data)}`)
+
+      balancesData.push(fetchBalanceResponse.data.Data[0])
     }
   
-    await client.disconnect();
+    // await client.disconnect();
     res.json({ data: balancesData });
   } catch (error) {
-    await client.disconnect();
-    next(error);
+    // await client.disconnect();
+    console.log(`Error fetching balances = ${JSON.stringify(error)}`)
   }
 });
 
 // Mint Tokens
 app.post('/mint-tokens', async (req: MintBurnRequest, res: Response, next: NextFunction) => {
   const {tokenKey, quantity, identityKey, privateKey} = req.body;
-  const client = getClientWithAuthority("GalaChainToken");
+  // const client = getClientWithAuthority("GalaChainToken");
 
   try {  
     const nftClassKey = tokenClassMap[tokenKey];
     if (!nftClassKey) {
       console.log("Invalid token key!")
-      await client.disconnect();
+      // await client.disconnect();
       return res.status(400).send({
         message: 'Invalid token key. Try again'
     });
@@ -135,17 +239,15 @@ app.post('/mint-tokens', async (req: MintBurnRequest, res: Response, next: NextF
       ],
       uses: new BigNumber(10)
     });
+    if (!adminPrivateKey) throw Error('Need to define GC_ADMIN_PRIVATE_KEY environment variable')
+
+    let endpoint = '/GrantAllowance'
+    galaAllowanceDto.sign(adminPrivateKey);
+    let payloadString = galaAllowanceDto.serialize()
+    console.log(` dto string = ${payloadString}`)
     console.log("Granting token allowance for user")
-    const grantAllowanceResult = await client.submitTransaction<TokenAllowance[]>(
-      "GrantAllowance",
-      galaAllowanceDto.signed(adminPrivateKey),
-      TokenAllowance
-    );
-    console.log(`grant allowance result = ${JSON.stringify(grantAllowanceResult)}`)
-    if (GalaChainResponse.isError(grantAllowanceResult)) {
-      await client.disconnect();
-      return res.status(500).json({ ...grantAllowanceResult });
-    }
+    const grantAllowanceResponse = await galaChainTokenAxios.post(endpoint, payloadString)
+    console.log(`Grant Allowance response = ${JSON.stringify(grantAllowanceResponse.data)}`)
 
     // mint Quantity of nftClassKey to user
     const userMintDto = await createValidDTO<MintTokenDto>(MintTokenDto, {
@@ -154,35 +256,29 @@ app.post('/mint-tokens', async (req: MintBurnRequest, res: Response, next: NextF
       quantity: new BigNumber(quantity)
     });
     console.log("Minting tokens for user")
-    const mintTokenResponse = await client.submitTransaction(
-      "MintToken",
-      userMintDto.signed(privateKey),
-      MintTokenDto
-    );
+    endpoint = '/MintToken'
+    userMintDto.sign(privateKey);
+    payloadString = userMintDto.serialize()
+    console.log(`dto string = ${payloadString}`)
+    console.log("Mint token for user")
+    const mintTokenResponse = await galaChainTokenAxios.post(endpoint, payloadString)
+    console.log(`Mint Token response = ${JSON.stringify(mintTokenResponse.data)}`)
 
-    if (GalaChainResponse.isError(mintTokenResponse)) {
-      await client.disconnect();
-      return res.status(500).json({ ...mintTokenResponse });
-    }
-
-    await client.disconnect();
     res.json({});
   } catch (error) {
-    await client.disconnect();
-    next(error);
+    console.log(`error minting token for user: ${JSON.stringify(error)}`)
+    return res.status(500).json({ error });
   }
 });
 
 // Burn Tokens
-app.put('/burn', async (req: MintBurnRequest, res: Response, next: NextFunction) => {
+app.post('/burn', async (req: MintBurnRequest, res: Response, next: NextFunction) => {
   const {tokenKey, quantity, privateKey} = req.body;
-  const client = getClientWithAuthority("GalaChainToken");
 
   try {
     const nftClassKey = tokenClassMap[tokenKey];
     if (!nftClassKey) {
       console.log("Invalid token key!")
-      await client.disconnect();
       return res.status(400).send({
         message: 'Invalid token key. Try again'
      });
@@ -198,22 +294,18 @@ app.put('/burn', async (req: MintBurnRequest, res: Response, next: NextFunction)
       ]
     });
     console.log("burning tokens for user")
-    const burnTokenResponse = await client.submitTransaction<TokenBurn>(
-      "BurnTokens",
-      burnTokensDto.signed(privateKey),
-      TokenBurn
-    );
-
-    if (GalaChainResponse.isError(burnTokenResponse)) {
-      await client.disconnect();
-      return res.status(500).json({ ...burnTokenResponse });
-    }
-
-    await client.disconnect();
-    res.json({ data: burnTokenResponse.Data, status: burnTokenResponse.Status });
+    let endpoint = '/BurnTokens'
+    burnTokensDto.sign(privateKey);
+    let payloadString = burnTokensDto.serialize()
+    console.log(`dto string = ${payloadString}`)
+    console.log("Burn Tokens for user")
+    const burnTokensResponse = await galaChainTokenAxios.post(endpoint, payloadString)
+    console.log(`Burn Token response = ${JSON.stringify(burnTokensResponse.data)}`)
+    res.json(burnTokensResponse.data);
   } catch (error) {
-    await client.disconnect();
-    next(error);
+    // await client.disconnect();
+    console.log(`Error burning tokens: ${JSON.stringify(error)}`)
+    return res.status(500).json({error})
   }
 });
 

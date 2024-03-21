@@ -1,26 +1,33 @@
 import { TokenClassKey } from "@gala-chain/api";
 import { plainToInstance } from "class-transformer";
 
-const mineralClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
+const dragonStoneClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
     collection: 'lastexpedition',
     category: "Currency",
-    type: "Mineral",
+    type: "DragonStone",
     additionalKey: "none"
 });
-const coreClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
+const dragonTearsClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
     collection: 'lastexpedition',
     category: "Currency",
-    type: "Core",
+    type: "DragonTears",
     additionalKey: "none"
 });
-const fragmentClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
+const magicSwordClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
     collection: 'lastexpedition',
     category: "Currency",
-    type: "Fragment",
+    type: "MagicSword",
+    additionalKey: "none"
+});
+const poisonousSnakeClassKey: TokenClassKey = plainToInstance(TokenClassKey, {
+    collection: 'lastexpedition',
+    category: "Currency",
+    type: "PoisonousSnake",
     additionalKey: "none"
 });
 export const tokenClassMap: Record<string, TokenClassKey> = {
-    "LEMIN": mineralClassKey,
-    "LECC": coreClassKey,
-    "LEFC": fragmentClassKey
+    DRST: dragonStoneClassKey,
+    DRTR: dragonTearsClassKey,
+    MGSD: magicSwordClassKey,
+    PSNAKE: poisonousSnakeClassKey
 }
