@@ -103,6 +103,7 @@ export default function UserStats() {
             }).then((res) => res.json()),
             onSuccess: (data) => {
                 resetCountdownEnds();
+                setLoading(true);
                 rehydrateBalances();
             },
             onError: (error) => {
@@ -115,17 +116,23 @@ export default function UserStats() {
     }, []);
 
     const handleCraftItem = async () => {
-        setLoading(true);
-        await burnToken('TBSW', 1);
-        await craftToken('DRST', 20);
-        await craftToken('DRTR', 10);
+        const randomNumber = Math.floor(Math.random() * 10) + 1;
+        if (randomNumber < 3) {
+            await burnToken('TBSW', 1);
+            await craftToken('DRST', 100);
+            await craftToken('DRTR', 50);
+        } else {
+            await burnToken('TBSW', 1);
+            await craftToken('DRST', 20);
+            await craftToken('DRTR', 10);
+        }
         rehydrateBalances();
         setLoading(false)
     }
-    if(loading) return <div>sMelting items...</div>
+    
   return (
     <div style={{ width:300,  position:'fixed', top:20, left:20}}>
-
+        {loading ? <div style={{ width:300,  position:'fixed', top:120, left:120, background:'white', color:'black', zIndex:3000}}><h1>sMelting items...</h1></div> : null}
       
         {/* <div style={{ display: "flex", alignItems: 'flex-start', flexDirection:'column'}}>
             <div style={{ display: "flex", alignItems: 'flex-start'}}>
@@ -144,7 +151,7 @@ export default function UserStats() {
             {
                 Object.keys(balances).map((key) => {
                     const balanceKey = key as keyof Balances;
-                    if (balanceKey === 'TurboSword') return null; 
+                    if (balanceKey === 'TurboSword' || balanceKey === 'UltraSword') return null; 
                     return <div key={key} style={{flex:1, padding:10}}><b>{key}<br/> {balances[balanceKey]}</b></div>
                 })
             }
