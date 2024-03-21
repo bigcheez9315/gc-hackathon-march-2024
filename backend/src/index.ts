@@ -10,6 +10,7 @@ import {
   MintTokenDto,
   BurnTokensDto,
   FetchBalancesDto,
+  UpdateTokenClassDto,
   TokenBurn,
   TokenBalance,
   TokenInstance,
@@ -117,8 +118,22 @@ app.post('/create-token-classes', async (req: Request, res: Response, next: Next
         "https://files.slack.com/files-tmb/T018SUFPRNU-F06JNH22RE0-c43278d8ca/nft_cores_360.gif",
       maxSupply: new BigNumber(maxSupply),
     });
-    console.log('creating magic sword dto')
-
+    console.log('creating turbo sword dto')
+    // create turboSword dto
+   const turboSwordDto: CreateTokenClassDto =
+    await createValidDTO<CreateTokenClassDto>(CreateTokenClassDto, {
+      decimals: 0,
+      tokenClass: tokenClassMap.TBSW,
+      name: "Turbo Sword",
+      symbol: "TBSW",
+      description:
+        "Turbo Sword Non-Fungible Token for Wizard Game",
+      isNonFungible: true,
+      image:
+        "https://files.slack.com/files-tmb/T018SUFPRNU-F06JNH22RE0-c43278d8ca/nft_cores_360.gif",
+      maxSupply: new BigNumber(2000),
+    });
+ console.log('creating ultra sword dto')
    // create magicSword dto
    const ultraSwordDto: CreateTokenClassDto =
       await createValidDTO<CreateTokenClassDto>(CreateTokenClassDto, {
@@ -131,7 +146,7 @@ app.post('/create-token-classes', async (req: Request, res: Response, next: Next
         isNonFungible: true,
         image:
           "https://files.slack.com/files-tmb/T018SUFPRNU-F06JNH22RE0-c43278d8ca/nft_cores_360.gif",
-        maxSupply: new BigNumber(20),
+        maxSupply: new BigNumber(2000),
       });
     console.log('creating ultra sword dto')
 
@@ -150,7 +165,9 @@ app.post('/create-token-classes', async (req: Request, res: Response, next: Next
      maxSupply: new BigNumber(15),
    });
    // store all dtos in an array
-   const dtoArray: CreateTokenClassDto[] = [dragonStoneDto, dragonTearsDto, ultraSwordDto, friendlySnakeDto]
+   const dtoArray: CreateTokenClassDto[] = [
+    dragonStoneDto, dragonTearsDto, ultraSwordDto, friendlySnakeDto, turboSwordDto
+  ]
    const failed = []
    // Make api request to /CreateTokenClass endpoint
    try {
